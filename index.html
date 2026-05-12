@@ -1,0 +1,738 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>ARCADE.LAB — Web Games</title>
+
+<!-- Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&family=JetBrains+Mono:wght@400;700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+
+<style>
+  /* =========================================================
+     ARCADE.LAB — a portfolio site for hosting web games
+     ---------------------------------------------------------
+     CUSTOMIZE:
+     • Site title:   change "ARCADE.LAB" in the header + <title>
+     • Games:        edit the GAMES array in the <script> at bottom
+     • Colors:       edit CSS variables in :root below
+     • Fonts:        change the Google Fonts link above + --font-*
+     ========================================================= */
+
+  :root {
+    --bg:           #0a0b08;
+    --bg-soft:      #131410;
+    --ink:          #f4f1e8;
+    --ink-dim:      #8a8779;
+    --accent:       #c6ff00;   /* acid lime */
+    --accent-hot:   #ff2d6f;   /* hot pink */
+    --accent-cool:  #4cc9ff;   /* electric blue */
+    --line:         #26271f;
+    --font-display: "Bricolage Grotesque", system-ui, sans-serif;
+    --font-serif:   "Instrument Serif", Georgia, serif;
+    --font-mono:    "JetBrains Mono", ui-monospace, monospace;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--font-display);
+    font-feature-settings: "ss01", "ss02";
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+
+  /* Subtle noise overlay for atmosphere */
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 100;
+    opacity: 0.06;
+    mix-blend-mode: overlay;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+  }
+
+  /* Faint scanlines */
+  body::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 99;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent 0,
+      transparent 2px,
+      rgba(255,255,255,0.012) 2px,
+      rgba(255,255,255,0.012) 3px
+    );
+  }
+
+  /* ====== HEADER ====== */
+  header {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.25rem 2rem;
+    background: rgba(10, 11, 8, 0.7);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--line);
+  }
+
+  .logo {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 1.1rem;
+    letter-spacing: -0.02em;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .logo .dot {
+    width: 10px;
+    height: 10px;
+    background: var(--accent);
+    border-radius: 50%;
+    box-shadow: 0 0 16px var(--accent);
+    animation: pulse 2s ease-in-out infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.6; transform: scale(0.85); }
+  }
+
+  nav {
+    display: flex;
+    gap: 2rem;
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  nav a {
+    color: var(--ink-dim);
+    text-decoration: none;
+    transition: color 0.2s;
+  }
+
+  nav a:hover { color: var(--accent); }
+
+  /* ====== HERO ====== */
+  .hero {
+    padding: 6rem 2rem 4rem;
+    max-width: 1400px;
+    margin: 0 auto;
+    position: relative;
+  }
+
+  .hero .eyebrow {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    color: var(--accent);
+    margin-bottom: 1.5rem;
+  }
+
+  .hero h1 {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: clamp(3rem, 9vw, 8rem);
+    line-height: 0.88;
+    letter-spacing: -0.04em;
+    margin: 0 0 2rem;
+    max-width: 16ch;
+  }
+
+  .hero h1 em {
+    font-family: var(--font-serif);
+    font-style: italic;
+    font-weight: 400;
+    color: var(--accent);
+  }
+
+  .hero .lede {
+    font-family: var(--font-display);
+    font-size: clamp(1.05rem, 1.4vw, 1.25rem);
+    color: var(--ink-dim);
+    max-width: 50ch;
+    line-height: 1.5;
+  }
+
+  .hero-meta {
+    display: flex;
+    gap: 3rem;
+    margin-top: 3rem;
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--ink-dim);
+  }
+
+  .hero-meta span strong {
+    display: block;
+    color: var(--ink);
+    font-size: 1.5rem;
+    font-family: var(--font-display);
+    font-weight: 800;
+    text-transform: none;
+    letter-spacing: -0.02em;
+    margin-top: 0.25rem;
+  }
+
+  /* ====== GAMES GRID ====== */
+  .grid-header {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 4rem 2rem 1.5rem;
+    display: flex;
+    align-items: end;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .grid-header h2 {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: clamp(1.5rem, 2.5vw, 2.25rem);
+    margin: 0;
+    letter-spacing: -0.02em;
+  }
+
+  .grid-header .count {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    color: var(--ink-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+  }
+
+  .games {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 2rem;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.5rem;
+  }
+
+  .game-card {
+    position: relative;
+    border: 1px solid var(--line);
+    background: var(--bg-soft);
+    overflow: hidden;
+    cursor: pointer;
+    transition: transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1),
+                border-color 0.3s;
+    text-align: left;
+    color: inherit;
+    font: inherit;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .game-card:hover {
+    transform: translateY(-6px);
+    border-color: var(--accent);
+  }
+
+  .game-card:hover .thumb {
+    transform: scale(1.05);
+  }
+
+  .game-card:hover .play-tag {
+    background: var(--accent);
+    color: var(--bg);
+  }
+
+  .thumb-wrap {
+    position: relative;
+    aspect-ratio: 4/3;
+    overflow: hidden;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .thumb {
+    position: absolute;
+    inset: 0;
+    transition: transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .thumb svg {
+    width: 50%;
+    height: 50%;
+    filter: drop-shadow(0 4px 24px rgba(0,0,0,0.4));
+  }
+
+  /* Distinct gradient backgrounds per game */
+  .thumb.g1 { background: radial-gradient(circle at 30% 30%, #ff2d6f, #6a0030 60%, #1a0010); }
+  .thumb.g2 { background: linear-gradient(135deg, #c6ff00 0%, #4d6600 60%, #1a2200); }
+  .thumb.g3 { background: radial-gradient(circle at 70% 40%, #4cc9ff, #003a55 70%, #001220); }
+  .thumb.g4 { background: conic-gradient(from 180deg at 50% 50%, #ff2d6f, #c6ff00, #4cc9ff, #ff2d6f); }
+  .thumb.g5 { background: linear-gradient(160deg, #2a2a2a 0%, #0a0a0a 50%, #c6ff00 50%, #c6ff00 52%, #0a0a0a 52%); }
+  .thumb.g6 { background: radial-gradient(ellipse at 50% 100%, #4cc9ff 0%, #1a0044 50%, #0a0010 100%); }
+
+  .play-tag {
+    position: absolute;
+    top: 0.75rem;
+    right: 0.75rem;
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    background: rgba(10, 11, 8, 0.7);
+    backdrop-filter: blur(8px);
+    color: var(--ink);
+    padding: 0.4rem 0.7rem;
+    border: 1px solid rgba(255,255,255,0.1);
+    transition: all 0.3s;
+  }
+
+  .badge {
+    position: absolute;
+    bottom: 0.75rem;
+    left: 0.75rem;
+    font-family: var(--font-mono);
+    font-size: 0.6rem;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    padding: 0.25rem 0.5rem;
+    background: var(--bg);
+    color: var(--accent);
+    border: 1px solid var(--accent);
+  }
+
+  .card-body {
+    padding: 1.25rem 1.25rem 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    flex: 1;
+  }
+
+  .card-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--ink-dim);
+  }
+
+  .card-title {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 1.4rem;
+    line-height: 1.05;
+    letter-spacing: -0.02em;
+    margin: 0.25rem 0 0.5rem;
+  }
+
+  .card-desc {
+    font-size: 0.9rem;
+    color: var(--ink-dim);
+    line-height: 1.5;
+    margin: 0;
+  }
+
+  /* ====== MODAL / PLAYER ====== */
+  .modal {
+    position: fixed;
+    inset: 0;
+    z-index: 200;
+    background: rgba(5, 5, 3, 0.92);
+    backdrop-filter: blur(20px);
+    display: none;
+    flex-direction: column;
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+
+  .modal.open {
+    display: flex;
+    opacity: 1;
+  }
+
+  .modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 2rem;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .modal-title {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 1.1rem;
+    letter-spacing: -0.02em;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .now-playing {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: var(--accent);
+  }
+
+  .close-btn {
+    background: transparent;
+    border: 1px solid var(--line);
+    color: var(--ink);
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    padding: 0.55rem 1rem;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .close-btn:hover {
+    background: var(--accent-hot);
+    border-color: var(--accent-hot);
+    color: var(--bg);
+  }
+
+  .game-frame {
+    flex: 1;
+    width: 100%;
+    border: none;
+    background: var(--bg);
+  }
+
+  .empty-state {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 2rem;
+    gap: 1rem;
+  }
+
+  .empty-state .icon {
+    font-size: 4rem;
+    opacity: 0.5;
+  }
+
+  .empty-state h3 {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 1.5rem;
+    margin: 0;
+  }
+
+  .empty-state p {
+    color: var(--ink-dim);
+    max-width: 50ch;
+    line-height: 1.5;
+    font-size: 0.95rem;
+  }
+
+  .empty-state code {
+    font-family: var(--font-mono);
+    background: var(--bg-soft);
+    border: 1px solid var(--line);
+    padding: 0.15rem 0.4rem;
+    font-size: 0.85rem;
+    color: var(--accent);
+  }
+
+  /* ====== FOOTER ====== */
+  footer {
+    margin-top: 6rem;
+    padding: 3rem 2rem 2rem;
+    border-top: 1px solid var(--line);
+    max-width: 1400px;
+    margin-left: auto;
+    margin-right: auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: end;
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    color: var(--ink-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+
+  footer .big {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: clamp(2rem, 8vw, 6rem);
+    color: var(--ink);
+    letter-spacing: -0.04em;
+    text-transform: none;
+    line-height: 0.9;
+  }
+
+  footer .big em {
+    font-family: var(--font-serif);
+    font-style: italic;
+    font-weight: 400;
+    color: var(--accent);
+  }
+
+  /* ====== MOBILE ====== */
+  @media (max-width: 640px) {
+    header { padding: 1rem; }
+    nav { gap: 1rem; }
+    nav a:not(:last-child) { display: none; }
+    .hero { padding: 4rem 1.25rem 2rem; }
+    .grid-header { padding: 3rem 1.25rem 1rem; }
+    .games { padding: 1.25rem; gap: 1rem; }
+    .hero-meta { flex-wrap: wrap; gap: 1.5rem; }
+    footer { padding: 2rem 1.25rem; flex-direction: column; align-items: flex-start; gap: 2rem; }
+    .modal-header { padding: 0.75rem 1rem; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo"><span class="dot"></span>ARCADE.LAB</div>
+  <nav>
+    <a href="#games">Games</a>
+    <a href="#about">About</a>
+    <a href="#contact">Contact</a>
+  </nav>
+</header>
+
+<section class="hero">
+  <div class="eyebrow">// EST 2026 — A WEB GAMES COLLECTION</div>
+  <h1>Press <em>start</em> to play something weird.</h1>
+  <p class="lede">
+    An evolving collection of browser games — hand-made, hand-broken, and
+    pleasantly small. No installs, no logins, no nonsense. Pick one and go.
+  </p>
+  <div class="hero-meta">
+    <span>Games<strong id="game-count">—</strong></span>
+    <span>Latest<strong id="latest-game">—</strong></span>
+    <span>Best on<strong>Desktop + Mobile</strong></span>
+  </div>
+</section>
+
+<div class="grid-header" id="games">
+  <h2>The Cabinet</h2>
+  <span class="count" id="grid-count">LOADING...</span>
+</div>
+
+<section class="games" id="games-grid"></section>
+
+<footer id="about">
+  <div>
+    <div class="big">Made <em>here</em>.</div>
+    <div style="margin-top: 1rem;">© 2026 ARCADE.LAB — All systems nominal</div>
+  </div>
+  <div style="text-align: right;">
+    <div>Get in touch</div>
+    <div style="color: var(--accent); margin-top: 0.5rem;">hello@example.com</div>
+  </div>
+</footer>
+
+<!-- ====== MODAL PLAYER ====== -->
+<div class="modal" id="modal">
+  <div class="modal-header">
+    <div class="modal-title">
+      <span class="now-playing">▶ Now Playing</span>
+      <span id="modal-title">—</span>
+    </div>
+    <button class="close-btn" onclick="closeGame()">✕ Close [ESC]</button>
+  </div>
+  <iframe id="game-frame" class="game-frame" src="" allow="autoplay; gamepad; fullscreen"></iframe>
+  <div class="empty-state" id="empty-state" style="display:none;">
+    <div class="icon">🕹️</div>
+    <h3>No game wired up yet</h3>
+    <p>
+      This card doesn't have a <code>url</code> set. Edit the <code>GAMES</code>
+      array near the bottom of the HTML file and set <code>url</code> to either
+      a hosted game URL or a local file path like <code>./games/my-game/index.html</code>.
+    </p>
+  </div>
+</div>
+
+<script>
+  /* =========================================================
+     YOUR GAMES GO HERE
+     ---------------------------------------------------------
+     Each game is an object with:
+       title       string — display name
+       tagline     string — short tag (genre / one-liner)
+       description string — 1–2 sentence pitch
+       year        string — release year
+       url         string — path or URL to your game's HTML
+                            (leave "" to show the "not wired up" message)
+       thumb       string — "g1" through "g6" picks a gradient style
+                            (or add your own in the CSS)
+       icon        string — SVG markup for the thumbnail icon
+     ========================================================= */
+  const GAMES = [
+    {
+      title: "Snake",
+      tagline: "Arcade Classic",
+      description: "Eat, grow, don't bite yourself. A timeless cruelty in pixel form.",
+      year: "2026",
+      url: "https://noelmendonce-star.github.io/eel/",
+      thumb: "g1",
+      icon: `<svg viewBox="0 0 100 100" fill="none" stroke="#fff" stroke-width="8" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M20 30 H50 V50 H35 V70 H65 V50 H80"/>
+        <circle cx="80" cy="50" r="4" fill="#fff" stroke="none"/>
+      </svg>`
+    },
+    {
+      title: "Pixel Quest",
+      tagline: "Tiny RPG",
+      description: "A small adventure with a smaller hero. Sword optional, snacks required.",
+      year: "2026",
+      url: "",
+      thumb: "g2",
+      icon: `<svg viewBox="0 0 100 100" fill="#0a0b08" stroke="#0a0b08" stroke-width="2">
+        <path d="M50 15 L60 25 L60 60 L55 65 L55 80 L45 80 L45 65 L40 60 L40 25 Z"/>
+        <rect x="35" y="58" width="30" height="6"/>
+      </svg>`
+    },
+    {
+      title: "Orbit",
+      tagline: "Physics Puzzle",
+      description: "Slingshot tiny moons into stable rings around stranger planets. Zen-ish.",
+      year: "2025",
+      url: "",
+      thumb: "g3",
+      icon: `<svg viewBox="0 0 100 100" fill="none" stroke="#fff" stroke-width="3">
+        <circle cx="50" cy="50" r="10" fill="#fff"/>
+        <ellipse cx="50" cy="50" rx="35" ry="14" transform="rotate(-20 50 50)"/>
+        <circle cx="82" cy="40" r="4" fill="#fff"/>
+      </svg>`
+    },
+    {
+      title: "Chroma",
+      tagline: "Color Match",
+      description: "Match shifting palettes before the colors decide to leave you behind.",
+      year: "2025",
+      url: "",
+      thumb: "g4",
+      icon: `<svg viewBox="0 0 100 100" fill="#0a0b08">
+        <circle cx="35" cy="35" r="22"/>
+        <circle cx="65" cy="35" r="22"/>
+        <circle cx="50" cy="65" r="22"/>
+      </svg>`
+    },
+    {
+      title: "Block Storm",
+      tagline: "Falling Blocks",
+      description: "The classic, but the blocks have started having opinions about where they land.",
+      year: "2024",
+      url: "",
+      thumb: "g5",
+      icon: `<svg viewBox="0 0 100 100" fill="#c6ff00">
+        <rect x="20" y="50" width="20" height="20"/>
+        <rect x="40" y="50" width="20" height="20"/>
+        <rect x="60" y="50" width="20" height="20"/>
+        <rect x="40" y="30" width="20" height="20"/>
+      </svg>`
+    },
+    {
+      title: "Star Frontier",
+      tagline: "Space Shooter",
+      description: "Defend the last orbital outpost. Bring patience; the asteroids are rude.",
+      year: "2024",
+      url: "",
+      thumb: "g6",
+      icon: `<svg viewBox="0 0 100 100" fill="#fff">
+        <path d="M50 15 L60 50 L50 45 L40 50 Z"/>
+        <path d="M50 45 L70 75 L50 65 L30 75 Z"/>
+      </svg>`
+    }
+  ];
+
+  /* ====== RENDER ====== */
+  const grid = document.getElementById("games-grid");
+  GAMES.forEach((game, i) => {
+    const card = document.createElement("button");
+    card.className = "game-card";
+    card.style.animationDelay = `${i * 60}ms`;
+    card.innerHTML = `
+      <div class="thumb-wrap">
+        <div class="thumb ${game.thumb}">${game.icon}</div>
+        <div class="play-tag">▶ Play</div>
+        <div class="badge">${game.tagline}</div>
+      </div>
+      <div class="card-body">
+        <div class="card-meta">
+          <span>${String(i + 1).padStart(2, "0")} / ${String(GAMES.length).padStart(2, "0")}</span>
+          <span>${game.year}</span>
+        </div>
+        <h3 class="card-title">${game.title}</h3>
+        <p class="card-desc">${game.description}</p>
+      </div>
+    `;
+    card.addEventListener("click", () => openGame(game));
+    grid.appendChild(card);
+  });
+
+  document.getElementById("game-count").textContent = String(GAMES.length).padStart(2, "0");
+  document.getElementById("latest-game").textContent = GAMES[0].title;
+  document.getElementById("grid-count").textContent = `${String(GAMES.length).padStart(2, "0")} ENTRIES`;
+
+  /* ====== MODAL ====== */
+  const modal = document.getElementById("modal");
+  const frame = document.getElementById("game-frame");
+  const modalTitle = document.getElementById("modal-title");
+  const emptyState = document.getElementById("empty-state");
+
+  function openGame(game) {
+    modalTitle.textContent = game.title;
+    if (game.url && game.url.trim() !== "") {
+      frame.src = game.url;
+      frame.style.display = "";
+      emptyState.style.display = "none";
+    } else {
+      frame.src = "";
+      frame.style.display = "none";
+      emptyState.style.display = "flex";
+    }
+    modal.classList.add("open");
+    document.body.style.overflow = "hidden";
+  }
+
+  function closeGame() {
+    modal.classList.remove("open");
+    frame.src = "";
+    document.body.style.overflow = "";
+  }
+
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && modal.classList.contains("open")) closeGame();
+  });
+</script>
+
+</body>
+</html>
